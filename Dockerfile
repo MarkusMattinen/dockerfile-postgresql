@@ -1,8 +1,8 @@
-# postgresql on trusty
+# postgresql and supervisord on trusty
 #
 # Included plugins:
 # pgextwlist
-FROM markusma/base:trusty
+FROM markusma/supervisord:trusty
 
 RUN rm -rf /etc/ssl/private
 
@@ -20,10 +20,8 @@ RUN cd /tmp \
  && mkdir -p `pg_config --pkglibdir`/plugins \
  && cp pgextwlist.so `pg_config --pkglibdir`/plugins
 
-ADD pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
-ADD postgresql.conf /etc/postgresql/9.3/main/postgresql.conf
+ADD config/etc/postgresql/9.3/main/pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
+ADD config/etc/postgresql/9.3/main/postgresql.conf /etc/postgresql/9.3/main/postgresql.conf
+ADD config/etc/supervisor/conf.d/postgresql.conf /etc/supervisor/conf.d/postgresql.conf
 
 EXPOSE 5432
-
-CMD ["su", "postgres", "sh", "-c", "/usr/lib/postgresql/9.3/bin/postgres -D /var/lib/postgresql/9.3/main -c config_file=/etc/postgresql/9.3/main/postgresql.conf"]
-
