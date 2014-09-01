@@ -7,7 +7,7 @@ FROM markusma/supervisord:trusty
 RUN rm -rf /etc/ssl/private
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends postgresql-9.3 postgresql-contrib-9.3 postgresql-server-dev-all git build-essential language-pack-fi \
+ && apt-get install -y --no-install-recommends postgresql-9.3 postgresql-contrib-9.3 postgresql-server-dev-all git build-essential language-pack-fi postgresql-9.3-postgis-2.1 \
  && dpkg-reconfigure locales \
  && cd /tmp \
  && git clone https://github.com/dimitri/pgextwlist.git \
