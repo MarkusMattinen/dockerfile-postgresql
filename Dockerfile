@@ -6,14 +6,17 @@ FROM markusma/supervisord:trusty
 
 RUN rm -rf /etc/ssl/private
 
-ENV POSTGRESQL_VERSION 9.4
-ENV POSTGIS_VERSION 2.1
+ENV POSTGRESQL_VERSION 9.5
+ENV POSTGIS_VERSION 2.2
 
-RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main ${POSTGRESQL_VERSION}" > /etc/apt/sources.list.d/pgdg.list \
  && apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 7FCC7D46ACCC4CF8 \
  && apt-get update \
- && apt-get install -y --no-install-recommends postgresql-${POSTGRESQL_VERSION} postgresql-contrib-${POSTGRESQL_VERSION} postgresql-server-dev-all git build-essential language-pack-fi postgresql-${POSTGRESQL_VERSION}-postgis-${POSTGIS_VERSION} \
+ && apt-get install -y --no-install-recommends postgresql-${POSTGRESQL_VERSION} postgresql-contrib-${POSTGRESQL_VERSION} postgresql-${POSTGRESQL_VERSION}-postgis-${POSTGIS_VERSION} language-pack-fi \
+postgresql-server-dev-${POSTGRESQL_VERSION} git build-essential \
  && dpkg-reconfigure locales \
+ && mkdir -p /var/run/postgresql/${POSTGRESQL_VERSION}-main.pg_stat_tmp \
+ && chown postgres:postgres /var/run/postgresql/${POSTGRESQL_VERSION}-main.pg_stat_tmp \
  && cd /tmp \
  && git clone https://github.com/dimitri/pgextwlist.git \
  && cd pgextwlist \
@@ -21,10 +24,8 @@ RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/
  && make install \
  && mkdir -p `pg_config --pkglibdir`/plugins \
  && cp pgextwlist.so `pg_config --pkglibdir`/plugins \
- && cd / \
- && rm -rf /tmp/pgextwlist \
- && apt-get purge -y postgresql-server-dev-all git build-essential \
- && apt-get autoremove -y \
+ && cd /tmp \
+ && apt-get autoremove --purge -y postgresql-server-dev-${POSTGRESQL_VERSION} git build-essential \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
