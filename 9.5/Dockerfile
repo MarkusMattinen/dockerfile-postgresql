@@ -1,4 +1,6 @@
-# PostgreSQL and supervisord on Ubuntu Trusty
+# PostgreSQL 9.5, PostGIS 2.2 and supervisord on Ubuntu Trusty
+#
+# PostGIS compiled with geos 3.5
 #
 # Included plugins:
 # pgextwlist
