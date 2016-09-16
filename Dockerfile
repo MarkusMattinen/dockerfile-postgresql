@@ -1,8 +1,8 @@
-# postgresql and supervisord on trusty
+# PostgreSQL and supervisord on Ubuntu Trusty
 #
 # Included plugins:
 # pgextwlist
-FROM markusma/supervisord:trusty
+FROM markusma/supervisord:ubuntu-trusty
 
 RUN rm -rf /etc/ssl/private
 
