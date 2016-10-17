@@ -7,18 +7,18 @@ FROM markusma/ubuntu:trusty
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
  && apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 7FCC7D46ACCC4CF8 \
  && apt-get update \
- && apt-get install -y --no-install-recommends postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-all git build-essential language-pack-fi less \
+ && apt-get install -y --no-install-recommends postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1 git build-essential language-pack-fi less \
  && dpkg-reconfigure locales \
  && cd /tmp \
  && git clone https://github.com/dimitri/pgextwlist.git \
  && cd pgextwlist \
  && make \
  && make install \
- && mkdir -p `pg_config --pkglibdir`/plugins \
- && cp pgextwlist.so `pg_config --pkglibdir`/plugins \
+ && mkdir -p /usr/lib/postgresql/9.1/lib/plugins \
+ && cp pgextwlist.so /usr/lib/postgresql/9.1/lib/plugins \
  && cd / \
  && rm -rf /tmp/pgextwlist \
- && apt-get purge -y postgresql-server-dev-all git build-essential \
+ && apt-get purge -y postgresql-server-dev-9.1 git build-essential \
  && apt-get autoremove -y \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

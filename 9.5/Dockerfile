@@ -19,8 +19,8 @@ postgresql-server-dev-9.5 autoconf build-essential cmake docbook-mathml docbook-
  && cd pgextwlist \
  && make -j`nproc` \
  && make install \
- && mkdir -p `pg_config --pkglibdir`/plugins \
- && cp pgextwlist.so `pg_config --pkglibdir`/plugins \
+ && mkdir -p /usr/lib/postgresql/9.5/lib/plugins \
+ && cp pgextwlist.so /usr/lib/postgresql/9.5/lib/plugins \
  && cd /tmp \
  && curl -L https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8.1/CGAL-4.8.1.tar.xz | tar xJ \
  && cd CGAL-4.8.1 \
