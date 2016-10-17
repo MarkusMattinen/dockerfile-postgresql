@@ -1,15 +1,13 @@
-# PostgreSQL 9.1 and supervisord on Ubuntu Trusty
+# PostgreSQL 9.1 on Ubuntu Trusty
 #
 # Included plugins:
 # pgextwlist
-FROM markusma/supervisord:ubuntu-trusty
+FROM markusma/ubuntu:trusty
 
-RUN rm -rf /etc/ssl/private
-
-ENV POSTGRESQL_VERSION 9.1
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends postgresql-${POSTGRESQL_VERSION} postgresql-contrib-${POSTGRESQL_VERSION} postgresql-server-dev-all git build-essential language-pack-fi less \
+RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
+ && apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 7FCC7D46ACCC4CF8 \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-all git build-essential language-pack-fi less \
  && dpkg-reconfigure locales \
  && cd /tmp \
  && git clone https://github.com/dimitri/pgextwlist.git \
@@ -25,8 +23,13 @@ RUN apt-get update \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ADD config/etc/postgresql/${POSTGRESQL_VERSION}/main/pg_hba.conf /etc/postgresql/${POSTGRESQL_VERSION}/main/pg_hba.conf
-ADD config/etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf /etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf
-ADD config/etc/supervisor/conf.d/postgresql.conf /etc/supervisor/conf.d/postgresql.conf
+RUN curl -L https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64 -o /usr/local/bin/gosu \
+ && chmod +x /usr/local/bin/gosu
+
+COPY etc/ /etc/
+COPY bin/ /usr/local/bin/
 
 EXPOSE 5432
+VOLUME ["/var/lib/postgresql/9.1/main"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/usr/lib/postgresql/9.1/bin/postgres", "-D", "/var/lib/postgresql/9.1/main", "-c", "config_file=/etc/postgresql/9.1/main/postgresql.conf"]

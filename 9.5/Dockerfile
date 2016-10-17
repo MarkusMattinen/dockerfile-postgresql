@@ -1,25 +1,19 @@
-# PostgreSQL 9.5, PostGIS 2.2 and supervisord on Ubuntu Trusty
+# PostgreSQL 9.5 with PostGIS 2.2 on Ubuntu Trusty
 #
 # PostGIS compiled with geos 3.5
 #
 # Included plugins:
 # pgextwlist
-FROM markusma/supervisord:ubuntu-trusty
+FROM markusma/ubuntu:trusty
 
-RUN rm -rf /etc/ssl/private
-
-ENV POSTGRESQL_VERSION 9.5
-ENV POSTGIS_VERSION_MAJOR 2.2
-ENV POSTGIS_VERSION 2.2.2
-
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main ${POSTGRESQL_VERSION}" > /etc/apt/sources.list.d/pgdg.list \
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main 9.5" > /etc/apt/sources.list.d/pgdg.list \
  && apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 7FCC7D46ACCC4CF8 \
  && apt-get update \
- && apt-get install -y --no-install-recommends postgresql-${POSTGRESQL_VERSION} postgresql-contrib-${POSTGRESQL_VERSION} language-pack-fi libproj0 libxml2 libgdal1h libboost-thread1.54.0 libboost-serialization1.54.0 libmpfr4 libgeotiff2 libgmp10 liblas2 libmpfr4 libopenscenegraph99 \
-postgresql-server-dev-${POSTGRESQL_VERSION} autoconf build-essential cmake docbook-mathml docbook-xsl libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-system-dev libboost-iostreams-dev libboost-program-options-dev libboost-timer-dev libcunit1-dev libgdal-dev libgeos++-dev libgeotiff-dev libgmp-dev libjson0-dev libjson-c-dev liblas-dev libmpfr-dev libopenscenegraph-dev libpq-dev libproj-dev libxml2-dev xsltproc \
+ && apt-get install -y --no-install-recommends postgresql-9.5 postgresql-contrib-9.5 language-pack-fi libproj0 libxml2 libgdal1h libboost-thread1.54.0 libboost-serialization1.54.0 libmpfr4 libgeotiff2 libgmp10 liblas2 libmpfr4 libopenscenegraph99 \
+postgresql-server-dev-9.5 autoconf build-essential cmake docbook-mathml docbook-xsl libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-system-dev libboost-iostreams-dev libboost-program-options-dev libboost-timer-dev libcunit1-dev libgdal-dev libgeos++-dev libgeotiff-dev libgmp-dev libjson0-dev libjson-c-dev liblas-dev libmpfr-dev libopenscenegraph-dev libpq-dev libproj-dev libxml2-dev xsltproc \
  && dpkg-reconfigure locales \
- && mkdir -p /var/run/postgresql/${POSTGRESQL_VERSION}-main.pg_stat_tmp \
- && chown postgres:postgres /var/run/postgresql/${POSTGRESQL_VERSION}-main.pg_stat_tmp \
+ && mkdir -p /var/run/postgresql/9.5-main.pg_stat_tmp \
+ && chown postgres:postgres /var/run/postgresql/9.5-main.pg_stat_tmp \
  && cd /tmp \
  && git clone https://github.com/dimitri/pgextwlist.git \
  && cd pgextwlist \
@@ -46,19 +40,24 @@ postgresql-server-dev-${POSTGRESQL_VERSION} autoconf build-essential cmake docbo
  && make \
  && make install \
  && cd /tmp \
- && curl -L http://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz | tar xz \
- && cd postgis-${POSTGIS_VERSION} \
+ && curl -L http://download.osgeo.org/postgis/source/postgis-2.2.2.tar.gz | tar xz \
+ && cd postgis-2.2.2 \
  && ./configure --with-sfcgal=/usr/local/bin/sfcgal-config --with-geos=/usr/local/bin/geos-config \
  && make \
  && make install \
  && cd /tmp \
  && ldconfig \
- && apt-get autoremove --purge -y postgresql-server-dev-${POSTGRESQL_VERSION} autoconf build-essential cmake docbook-mathml docbook-xsl libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-system-dev libboost-iostreams-dev libboost-program-options-dev libboost-timer-dev libcunit1-dev libgdal-dev libgeos++-dev libgeotiff-dev libgmp-dev libjson0-dev libjson-c-dev liblas-dev libmpfr-dev libopenscenegraph-dev libpq-dev libproj-dev libxml2-dev xsltproc \
+ && apt-get autoremove --purge -y postgresql-server-dev-9.5 autoconf build-essential cmake docbook-mathml docbook-xsl libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-system-dev libboost-iostreams-dev libboost-program-options-dev libboost-timer-dev libcunit1-dev libgdal-dev libgeos++-dev libgeotiff-dev libgmp-dev libjson0-dev libjson-c-dev liblas-dev libmpfr-dev libopenscenegraph-dev libpq-dev libproj-dev libxml2-dev xsltproc \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ADD config/etc/postgresql/${POSTGRESQL_VERSION}/main/pg_hba.conf /etc/postgresql/${POSTGRESQL_VERSION}/main/pg_hba.conf
-ADD config/etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf /etc/postgresql/${POSTGRESQL_VERSION}/main/postgresql.conf
-ADD config/etc/supervisor/conf.d/postgresql.conf /etc/supervisor/conf.d/postgresql.conf
+RUN curl -L https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64 -o /usr/local/bin/gosu \
+ && chmod +x /usr/local/bin/gosu
+
+COPY etc/ /etc/
+COPY bin/ /usr/local/bin/
 
 EXPOSE 5432
+VOLUME ["/var/lib/postgresql/9.5/main"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/usr/lib/postgresql/9.5/bin/postgres", "-D", "/var/lib/postgresql/9.5/main", "-c", "config_file=/etc/postgresql/9.5/main/postgresql.conf"]
